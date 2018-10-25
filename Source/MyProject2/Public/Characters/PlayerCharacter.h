@@ -58,6 +58,20 @@ protected:
 
 	bool HasAmmo() const { return (CurrentAmmo > 0); }
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Character|Input|Movement")
+		void OnSprintStart();
+	void OnSprintStart_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Character|Input|Movement")
+		void OnSprintEnd();
+	void OnSprintEnd_Implementation();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character|Gun")
+		class UParticleSystem* TrailEffect;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character|Gun")
+		class UParticleSystem* HitEffect;
+
 	UFUNCTION(BlueprintCallable, Category = "Character|Input|Movement")
 		void MoveForward(float Scalar);
 
@@ -88,5 +102,7 @@ protected:
 private:
 
 	float PreviousWalkSpeed;
+
+	void SpawnShootingParticles(FVector ParticleLocation);
 	
 };

@@ -5,6 +5,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 
 APlayerCharacter::APlayerCharacter() 
@@ -57,11 +60,18 @@ APlayerCharacter::APlayerCharacter()
 
 	SprintSpeed = 1500.0f;
 
+	TrailEffect = nullptr;
+	HitEffect = nullptr;
+
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// This will attach the gun to the hand's mesh
+	GunMesh->AttachToComponent(FP_Mesh,
+		FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("GripPoint"));
 
 	if (CurrentHealth != MaxHealth)
 	{
@@ -80,8 +90,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &APlayerCharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJumping);
+
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::OnSprintStart);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::OnSprintEnd);
 
 	// Camera input
 	PlayerInputComponent->BindAxis("Turn", this, &APlayerCharacter::TurnAtRate);
@@ -90,6 +103,27 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::OnDeath_Implementation()
 {
+}
+
+void APlayerCharacter::OnSprintStart_Implementation()
+{
+	// Stop us from being able to shoot and turn on the flag for sprinting
+	bIsSprinting = true;
+	bCanShoot = false;
+	// Save what our walk speed was initially
+	PreviousWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	// Update our current walk speed to the sprint speed
+	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+}
+
+void APlayerCharacter::OnSprintEnd_Implementation()
+{
+	// Turn off the flag for sprinting
+	bIsSprinting = false;
+	// Revert our walk speed from sprint to regular walking speed
+	GetCharacterMovement()->MaxWalkSpeed = PreviousWalkSpeed;
+	// Allow us to shoot again
+	bCanShoot = true;
 }
 
 void APlayerCharacter::MoveForward(float Scalar)
@@ -130,6 +164,34 @@ void APlayerCharacter::LookUpRate(float Rate)
 void APlayerCharacter::TurnAtRate(float Rate)
 {
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->DeltaTimeSeconds);
+}
+
+void APlayerCharacter::SpawnShootingParticles(FVector ParticleLocation)
+{
+	// Check if our trail effect pointer is valid
+	if (TrailEffect)
+	{
+		// Spawn the particle
+		UParticleSystemComponent* SpawnedParticle = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(), TrailEffect, GunMesh->GetSocketLocation(FName("Muzzle")));
+
+		// Scale the particle up so its easily visible
+		SpawnedParticle->SetWorldScale3D(FVector(5.0f));
+
+		// Set the end of the particle beam
+		SpawnedParticle->SetVectorParameter(FName("ShockBeamEnd"), ParticleLocation);
+	}
+
+	// Check if our hit effect pointer is valid
+	if (HitEffect)
+	{
+		// Spawn the particle
+		UParticleSystemComponent* SpawnedParticle = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(), HitEffect, ParticleLocation, FRotator::ZeroRotator, true);
+
+		// Scale the particle up so its easily visible
+		SpawnedParticle->SetWorldScale3D(FVector(0.25f));
+	}
 }
 
 
