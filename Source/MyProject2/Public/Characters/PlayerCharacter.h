@@ -38,6 +38,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Character|Gun|Ammo")
 		void SetCurrentAmmo(int NewAmmo) { CurrentAmmo = NewAmmo; }
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Camera")
+		float BaseTurnRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Camera")
+		float BaseLookUpRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Movement")
+		float SprintSpeed;
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -49,6 +58,24 @@ protected:
 
 	bool HasAmmo() const { return (CurrentAmmo > 0); }
 
+	UFUNCTION(BlueprintCallable, Category = "Character|Input|Movement")
+		void MoveForward(float Scalar);
+
+	UFUNCTION(BlueprintCallable, Category = "Character|Input|Movement")
+		void MoveRight(float Scalar);
+
+	UFUNCTION(BlueprintCallable, Category = "Character|Input|Camera")
+		void LookUpRate(float Rate);
+
+	UFUNCTION(BlueprintCallable, Category = "Character|Input|Camera")
+		void TurnAtRate(float Rate);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Camera")
+		float CameraPitchMin;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Camera")
+		float CameraPitchMax;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Gun")
 		bool bCanShoot;
 
@@ -57,5 +84,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character|Gun|Ammo")
 		int MaxAmmo;
+
+private:
+
+	float PreviousWalkSpeed;
 	
 };

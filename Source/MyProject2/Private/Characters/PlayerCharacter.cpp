@@ -50,6 +50,13 @@ APlayerCharacter::APlayerCharacter()
 	MaxAmmo = 20;
 	CurrentAmmo = MaxAmmo;
 
+	BaseTurnRate = 100.0f;
+	BaseLookUpRate = 100.0f;
+	CameraPitchMin = -89.0f;
+	CameraPitchMax = 89.0f;
+
+	SprintSpeed = 1500.0f;
+
 }
 
 void APlayerCharacter::BeginPlay()
@@ -62,15 +69,67 @@ void APlayerCharacter::BeginPlay()
 	}
 }
 
-void APlayerCharacter::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
+void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// Assertion check
 	check(PlayerInputComponent);
+
+	// Movement input
+	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
+
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	// Camera input
+	PlayerInputComponent->BindAxis("Turn", this, &APlayerCharacter::TurnAtRate);
+	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::LookUpRate);
 }
 
 void APlayerCharacter::OnDeath_Implementation()
 {
+}
+
+void APlayerCharacter::MoveForward(float Scalar)
+{
+	if (Scalar != 0.0f)
+	{
+		AddMovementInput(GetActorForwardVector(), Scalar);
+	}
+}
+
+void APlayerCharacter::MoveRight(float Scalar)
+{
+	if (Scalar != 0.0f)
+	{
+		AddMovementInput(GetActorRightVector(), Scalar);
+	}
+}
+
+void APlayerCharacter::LookUpRate(float Rate)
+{
+	// Only continue if the spring arm is valid
+	if (SpringArm)
+	{
+		// Get the current rotation
+		FRotator CameraRelativeRot = SpringArm->RelativeRotation;
+		// Get the intended pitch
+		const float CameraNewPitch = FMath::ClampAngle(CameraRelativeRot.Pitch + Rate * BaseLookUpRate * GetWorld()->DeltaTimeSeconds,
+			CameraPitchMin, CameraPitchMax);
+
+		// Combine the values to become the new intended pitch
+		CameraRelativeRot.Pitch = CameraNewPitch;
+
+		// Confirm/Update the spring arm rotation
+		SpringArm->SetRelativeRotation(CameraRelativeRot);
+	}
+}
+
+void APlayerCharacter::TurnAtRate(float Rate)
+{
+	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->DeltaTimeSeconds);
 }
 
 
