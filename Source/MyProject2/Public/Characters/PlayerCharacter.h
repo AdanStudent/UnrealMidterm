@@ -54,6 +54,15 @@ protected:
 
 	virtual void OnDeath_Implementation() override;
 
+	virtual float TakeDamage(float DamageAmount, 
+							struct FDamageEvent const &DamageEvent, 
+							class AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Character|Input|Gun")
+		void OnFire();
+	virtual void OnFire_Implementation();
+
+
 	int CurrentAmmo;
 
 	bool HasAmmo() const { return (CurrentAmmo > 0); }
@@ -71,6 +80,21 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character|Gun")
 		class UParticleSystem* HitEffect;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character|Gun")
+		class UAnimMontage* FireAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Gun")
+		float DamageAmount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Gun")
+		bool bCanShoot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Gun|Ammo")
+		bool bUnlimitedAmmo;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character|Gun|Ammo")
+		int MaxAmmo;
 
 	UFUNCTION(BlueprintCallable, Category = "Character|Input|Movement")
 		void MoveForward(float Scalar);
@@ -90,14 +114,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Camera")
 		float CameraPitchMax;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Gun")
-		bool bCanShoot;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character|Gun|Ammo")
-		bool bUnlimitedAmmo;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character|Gun|Ammo")
-		int MaxAmmo;
 
 private:
 
