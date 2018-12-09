@@ -9,6 +9,8 @@
 #include "Engine.h"
 
 
+static FName Name_ShouldWanderKey("ShouldWander");
+static FName Name_EnemyKey("Enemy");
 
 AAgentAIController::AAgentAIController()
 {
@@ -32,8 +34,22 @@ void AAgentAIController::Possess(APawn* InPawn)
 		BlackboardComp->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 		BehaviorTreeComp->StartTree(*BehaviorTree);
 
-		BlackboardComp->SetValueAsBool("ShouldWander", true);
+		BlackboardComp->SetValueAsBool(Name_ShouldWanderKey, true);
 	}
+}
+
+bool AAgentAIController::HasLineOfSightTo(const AActor * Other) const
+{
+
+	if (BlackboardComp && Other)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("I don't see you"));
+		BlackboardComp->SetValueAsBool(Name_ShouldWanderKey, true);
+		BlackboardComp->SetValueAsObject(Name_EnemyKey, NULL);
+		return true;
+	}
+	
+	return false;
 }
 
 void AAgentAIController::OnSeePawn(APawn * SensedPawn)
@@ -42,8 +58,8 @@ void AAgentAIController::OnSeePawn(APawn * SensedPawn)
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("I see you"));
 
-		BlackboardComp->SetValueAsBool("ShouldWander", false);
-		BlackboardComp->SetValueAsObject("Enemy", SensedPawn);
+		BlackboardComp->SetValueAsBool(Name_ShouldWanderKey, false);
+		BlackboardComp->SetValueAsObject(Name_EnemyKey, SensedPawn);
 
 	}
 }

@@ -19,6 +19,8 @@ protected:
 
 	virtual void Possess(APawn* InPawn) override;
 
+	virtual bool HasLineOfSightTo(const AActor* Other) const;
+
 	UPROPERTY(EditDefaultsOnly)
 	class UPawnSensingComponent* PawnSensingComp;
 

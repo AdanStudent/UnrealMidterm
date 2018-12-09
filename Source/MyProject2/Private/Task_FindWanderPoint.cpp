@@ -8,7 +8,7 @@
 #include "AIWanderPoint.h"
 #include "Engine.h"
 
-
+static FName Name_WanderPointKey("WanderPoint");
 EBTNodeResult::Type UTask_FindWanderPoint::ExecuteTask(class UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AAgentAIController* AIController = Cast<AAgentAIController>(OwnerComp.GetAIOwner());
@@ -29,7 +29,7 @@ EBTNodeResult::Type UTask_FindWanderPoint::ExecuteTask(class UBehaviorTreeCompon
 		return EBTNodeResult::Failed;
 	}
 
-	AAIWanderPoint* CurrentWanderPoint = Cast<AAIWanderPoint>(AIBlackboard->GetValueAsObject("WanderPoint"));
+	AAIWanderPoint* CurrentWanderPoint = Cast<AAIWanderPoint>(AIBlackboard->GetValueAsObject(Name_WanderPointKey));
 	AAIWanderPoint* NewWanderPoint = Cast<AAIWanderPoint>(WanderPoints[FMath::RandRange(0, WanderPoints.Num() - 1)]);
 
 	//will break if only 1 WanderPoint
@@ -38,7 +38,7 @@ EBTNodeResult::Type UTask_FindWanderPoint::ExecuteTask(class UBehaviorTreeCompon
 		NewWanderPoint = Cast<AAIWanderPoint>(WanderPoints[FMath::RandRange(0, WanderPoints.Num() - 1)]);
 	}
 
-	AIBlackboard->SetValueAsObject("WanderPoint", NewWanderPoint);
+	AIBlackboard->SetValueAsObject(Name_WanderPointKey, NewWanderPoint);
 
 	return EBTNodeResult::Succeeded;
 }
