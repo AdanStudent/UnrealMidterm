@@ -15,6 +15,11 @@ public:
 	// Sets default values for this character's properties
 	AAgentCharacter();
 
+	void DoSomething()
+	{
+		GLog->Log("UsefulActor does something...");
+	}
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

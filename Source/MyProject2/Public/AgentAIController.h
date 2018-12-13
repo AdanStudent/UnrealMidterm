@@ -38,6 +38,8 @@ protected:
 
 public:
 	FORCEINLINE class UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }
+
+
 	
 	
 };
